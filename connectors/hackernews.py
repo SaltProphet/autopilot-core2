@@ -39,5 +39,6 @@ def search(query: str, limit: int = 25, by_date: bool = True, tags: Optional[str
             }
         )
 
+    # Small delay to respect rate limits (100ms = max 10 requests/sec)
     time.sleep(0.10)
     return out

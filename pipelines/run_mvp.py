@@ -79,18 +79,27 @@ def store_signals_to_db(signals: List[Dict[str, str]], db_path: str) -> None:
                 # Generate unique ID
                 signal_id = f"{signal['source']}_{signal['source_ref']}"
                 
-                # Insert or update
-                session.execute(
-                    problem_signals.insert().values(
-                        id=signal_id,
-                        source=signal['source'],
-                        source_ref=signal['source_ref'],
+                # Use INSERT OR REPLACE for SQLite (upsert)
+                from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+                stmt = sqlite_insert(problem_signals).values(
+                    id=signal_id,
+                    source=signal['source'],
+                    source_ref=signal['source_ref'],
+                    title=signal['title'],
+                    body=signal['body'],
+                    url=signal['url'],
+                    discovered_at=datetime.now(timezone.utc),
+                )
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=['id'],
+                    set_=dict(
                         title=signal['title'],
                         body=signal['body'],
                         url=signal['url'],
                         discovered_at=datetime.now(timezone.utc),
                     )
                 )
+                session.execute(stmt)
             
             session.commit()
             print(f"Stored {len(signals)} signals to database")

@@ -42,9 +42,7 @@ def get(key: str, default: Any = None) -> Any:
 
 
 def update(updates: Dict[str, Any]) -> None:
-    """Update settings (in-memory only, does not persist to env vars)"""
-    # This is a simplified implementation
-    # In a real system, you'd want to persist to a config file or database
+    """Update settings (persists to environment variables for current process)"""
     for key, value in updates.items():
         if key in DEFAULTS:
             os.environ[f"PI_CORE_{key.upper()}"] = str(value)

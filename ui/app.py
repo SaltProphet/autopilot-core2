@@ -39,22 +39,8 @@ async def get_settings():
 @app.patch("/api/settings")
 async def update_settings(patch: SettingsPatch):
     """Update settings"""
-    updates = {}
-    
-    if patch.mode is not None:
-        updates["mode"] = patch.mode
-    if patch.max_cost_cents_per_run is not None:
-        updates["max_cost_cents_per_run"] = patch.max_cost_cents_per_run
-    if patch.banned_categories_json is not None:
-        updates["banned_categories_json"] = patch.banned_categories_json
-    if patch.hn_query is not None:
-        updates["hn_query"] = patch.hn_query
-    if patch.hn_limit is not None:
-        updates["hn_limit"] = patch.hn_limit
-    if patch.hn_tags is not None:
-        updates["hn_tags"] = patch.hn_tags
-    if patch.hn_by_date is not None:
-        updates["hn_by_date"] = patch.hn_by_date
+    # Only include fields that were explicitly set
+    updates = patch.model_dump(exclude_unset=True)
     
     settings.update(updates)
     
