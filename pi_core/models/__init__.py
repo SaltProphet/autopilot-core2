@@ -1,6 +1,6 @@
 """Data models for pi-core"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 from uuid import uuid4
@@ -83,7 +83,7 @@ class Problem(BaseModel):
     recency_score: float = Field(ge=0.0, le=1.0)
     evidence: List[EvidenceSnippet] = Field(default_factory=list)
     keywords: List[str] = Field(default_factory=list)
-    discovered_at: datetime = Field(default_factory=datetime.utcnow)
+    discovered_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Product(BaseModel):
@@ -98,7 +98,7 @@ class Product(BaseModel):
     features: List[str] = Field(default_factory=list)
     non_goals: List[str] = Field(default_factory=list)
     why_shippable: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class MarketplaceListing(BaseModel):
@@ -114,7 +114,7 @@ class MarketplaceListing(BaseModel):
     anchor_price: float
     impulse_price: float
     asset_bundle_path: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class PipelineRun(BaseModel):
@@ -129,7 +129,7 @@ class PipelineRun(BaseModel):
     error_message: Optional[str] = None
     logs: List[str] = Field(default_factory=list)
     artifacts: List[str] = Field(default_factory=list)
-    started_at: datetime = Field(default_factory=datetime.utcnow)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
 
 

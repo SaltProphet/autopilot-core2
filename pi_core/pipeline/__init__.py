@@ -1,7 +1,7 @@
 """Pipeline orchestration and execution"""
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -88,7 +88,13 @@ class PipelineRunner:
                 PipelineStage.DEFINE, 
                 PipelineStage.BUILD
             ]]:
-                product = self.db.get_products(limit=1)[0] if not hasattr(self, 'product') else product
+                # Get the product if we don't have it from previous stage
+                if 'product' not in locals():
+                    products = self.db.get_products(limit=1)
+                    if not products:
+                        return await self._fail_run("No product found to build")
+                    product = products[0]
+                
                 product_dir = await self._run_build_stage(product)
                 if not product_dir:
                     return await self._fail_run("Failed to build product")
@@ -208,7 +214,7 @@ class PipelineRunner:
     async def _complete_run(self) -> PipelineRun:
         """Mark the run as completed"""
         self.current_run.status = PipelineStatus.SUCCESS
-        self.current_run.completed_at = datetime.utcnow()
+        self.current_run.completed_at = datetime.now(timezone.utc)
         self._log("Pipeline completed successfully!")
         self.db.update_pipeline_run(self.current_run)
         return self.current_run
@@ -217,14 +223,14 @@ class PipelineRunner:
         """Mark the run as failed"""
         self.current_run.status = PipelineStatus.FAILED
         self.current_run.error_message = error_message
-        self.current_run.completed_at = datetime.utcnow()
+        self.current_run.completed_at = datetime.now(timezone.utc)
         self._log(f"Pipeline failed: {error_message}")
         self.db.update_pipeline_run(self.current_run)
         return self.current_run
 
     def _log(self, message: str):
         """Add a log message to the current run"""
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         log_entry = f"[{timestamp}] {message}"
         self.current_run.logs.append(log_entry)
         print(log_entry)  # Also print to console
