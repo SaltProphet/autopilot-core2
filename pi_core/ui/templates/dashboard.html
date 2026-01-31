@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pi-core Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        header p {
+            opacity: 0.8;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .controls h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button.danger {
+            background: #e74c3c;
+        }
+        
+        button.danger:hover {
+            background: #c0392b;
+        }
+        
+        button.success {
+            background: #27ae60;
+        }
+        
+        button.success:hover {
+            background: #229954;
+        }
+        
+        .pipeline-status {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .status-pending { background: #f39c12; color: white; }
+        .status-running { background: #3498db; color: white; }
+        .status-success { background: #27ae60; color: white; }
+        .status-failed { background: #e74c3c; color: white; }
+        
+        .stages {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .stage {
+            flex: 1;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .stage.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .stage.complete {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .data-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .data-section h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .data-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .data-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .data-card h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .data-card .meta {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+        
+        .logs {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .logs div {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 pi-core Dashboard</h1>
+            <p>AI-Powered Problem Discovery & Product Generation</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Controls -->
+        <div class="controls">
+            <h2>Control Plane</h2>
+            <div class="control-group">
+                <div class="toggle">
+                    <input type="checkbox" id="reddit-toggle" {% if config.reddit.enabled %}checked{% endif %}>
+                    <label for="reddit-toggle">Reddit Source</label>
+                </div>
+                <div class="toggle">
+                    <input type="checkbox" id="github-toggle" {% if config.github.enabled %}checked{% endif %}>
+                    <label for="github-toggle">GitHub Source</label>
+                </div>
+                <div class="toggle">
+                    <input type="checkbox" id="approval-toggle" {% if config.guardrails.require_manual_approval %}checked{% endif %}>
+                    <label for="approval-toggle">Manual Approval Required</label>
+                </div>
+                <button class="success" onclick="runPipeline()">▶ Run Pipeline</button>
+                <button class="danger" onclick="toggleKillSwitch()">
+                    {% if config.guardrails.global_enabled %}🛑 Kill Switch{% else %}✓ Enable Pipeline{% endif %}
+                </button>
+            </div>
+        </div>
+        
+        <!-- Pipeline Status -->
+        <div class="pipeline-status">
+            <h2>Pipeline Status</h2>
+            {% if latest_run %}
+                <p>
+                    Status: <span class="status-badge status-{{ latest_run.status.value }}">
+                        {{ latest_run.status.value.upper() }}
+                    </span>
+                </p>
+                <div class="stages">
+                    <div class="stage {% if latest_run.stage.value == 'discover' %}active{% endif %}">
+                        1. Discover
+                    </div>
+                    <div class="stage {% if latest_run.stage.value == 'define' %}active{% endif %}">
+                        2. Define
+                    </div>
+                    <div class="stage {% if latest_run.stage.value == 'build' %}active{% endif %}">
+                        3. Build
+                    </div>
+                    <div class="stage {% if latest_run.stage.value == 'package' %}active{% endif %}">
+                        4. Package
+                    </div>
+                </div>
+                
+                {% if latest_run.logs %}
+                <h3>Recent Logs</h3>
+                <div class="logs">
+                    {% for log in latest_run.logs[-10:] %}
+                    <div>{{ log }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No pipeline runs yet. Click "Run Pipeline" to start.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Problems -->
+        <div class="data-section">
+            <h2>Discovered Problems ({{ problems|length }})</h2>
+            {% if problems %}
+                <div class="data-grid">
+                    {% for problem in problems[:5] %}
+                    <div class="data-card">
+                        <h3>{{ problem.title }}</h3>
+                        <p>{{ problem.description[:200] }}...</p>
+                        <div class="meta">
+                            Source: {{ problem.source.value }} | 
+                            Confidence: {{ "%.2f"|format(problem.confidence_score) }} | 
+                            Frequency: {{ problem.frequency_score }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">No problems discovered yet.</div>
+            {% endif %}
+        </div>
+        
+        <!-- Products -->
+        <div class="data-section">
+            <h2>Generated Products ({{ products|length }})</h2>
+            {% if products %}
+                <div class="data-grid">
+                    {% for product in products[:5] %}
+                    <div class="data-card">
+                        <h3>{{ product.title }}</h3>
+                        <p>{{ product.value_proposition }}</p>
+                        <div class="meta">
+                            Type: {{ product.product_type.value }} | 
+                            Features: {{ product.features|length }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">No products generated yet.</div>
+            {% endif %}
+        </div>
+        
+        <!-- Listings -->
+        <div class="data-section">
+            <h2>Marketplace Listings ({{ listings|length }})</h2>
+            {% if listings %}
+                <div class="data-grid">
+                    {% for listing in listings[:5] %}
+                    <div class="data-card">
+                        <h3>{{ listing.title }}</h3>
+                        <p>{{ listing.description[:150] }}...</p>
+                        <div class="meta">
+                            Price: ${{ "%.2f"|format(listing.impulse_price) }} - ${{ "%.2f"|format(listing.anchor_price) }} | 
+                            Bundle: {{ listing.asset_bundle_path.split('/')[-1] if listing.asset_bundle_path else 'N/A' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">No marketplace listings yet.</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        async function runPipeline() {
+            if (!confirm('Start a new pipeline run?')) return;
+            
+            try {
+                const response = await fetch('/api/pipeline/run', { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Pipeline started! Refresh to see progress.');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error starting pipeline: ' + error);
+            }
+        }
+        
+        async function toggleKillSwitch() {
+            const enabled = {{ 'false' if config.guardrails.global_enabled else 'true' }};
+            
+            try {
+                const response = await fetch('/api/config/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guardrails_enabled: enabled })
+                });
+                
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error updating configuration');
+                }
+            } catch (error) {
+                alert('Error: ' + error);
+            }
+        }
+        
+        // Toggle handlers
+        document.getElementById('reddit-toggle').addEventListener('change', async (e) => {
+            await updateConfig({ reddit_enabled: e.target.checked });
+        });
+        
+        document.getElementById('github-toggle').addEventListener('change', async (e) => {
+            await updateConfig({ github_enabled: e.target.checked });
+        });
+        
+        document.getElementById('approval-toggle').addEventListener('change', async (e) => {
+            await updateConfig({ require_approval: e.target.checked });
+        });
+        
+        async function updateConfig(updates) {
+            try {
+                await fetch('/api/config/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+            } catch (error) {
+                console.error('Error updating config:', error);
+            }
+        }
+        
+        // Auto-refresh status every 5 seconds
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/pipeline/status');
+                const status = await response.json();
+                
+                if (status.status === 'running') {
+                    // Could update UI here without full reload
+                    console.log('Pipeline running:', status.stage);
+                }
+            } catch (error) {
+                console.error('Error fetching status:', error);
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
