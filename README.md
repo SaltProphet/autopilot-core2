@@ -75,8 +75,6 @@ Visit http://localhost:8000 to access the control dashboard.
 
 ## 🔑 API Configuration (Optional)
 
-## 🔑 API Configuration (Optional)
-
 The demo works without any API credentials. For live problem discovery from Reddit and GitHub:
 
 **Reddit API:**
