@@ -36,6 +36,15 @@ class Database:
         """Save a problem to the database"""
         session = self.get_session()
         try:
+            # Convert evidence to JSON-serializable format
+            evidence_dicts = []
+            for e in problem.evidence:
+                evidence_dict = e.model_dump()
+                # Convert datetime to ISO string
+                if evidence_dict.get('timestamp'):
+                    evidence_dict['timestamp'] = evidence_dict['timestamp'].isoformat()
+                evidence_dicts.append(evidence_dict)
+            
             db_problem = ProblemDB(
                 id=problem.id,
                 title=problem.title,
@@ -45,7 +54,7 @@ class Database:
                 confidence_score=problem.confidence_score,
                 frequency_score=problem.frequency_score,
                 recency_score=problem.recency_score,
-                evidence=[e.model_dump() for e in problem.evidence],
+                evidence=evidence_dicts,
                 keywords=problem.keywords,
                 discovered_at=problem.discovered_at,
             )
@@ -63,9 +72,18 @@ class Database:
             ).limit(limit).all()
             
             from pi_core.models import EvidenceSnippet
+            from datetime import datetime
             
-            return [
-                Problem(
+            problems = []
+            for p in db_problems:
+                # Parse evidence with datetime handling
+                evidence_list = []
+                for e in p.evidence:
+                    if isinstance(e.get('timestamp'), str):
+                        e['timestamp'] = datetime.fromisoformat(e['timestamp'])
+                    evidence_list.append(EvidenceSnippet(**e))
+                
+                problems.append(Problem(
                     id=p.id,
                     title=p.title,
                     description=p.description,
@@ -74,12 +92,12 @@ class Database:
                     confidence_score=p.confidence_score,
                     frequency_score=p.frequency_score,
                     recency_score=p.recency_score,
-                    evidence=[EvidenceSnippet(**e) for e in p.evidence],
+                    evidence=evidence_list,
                     keywords=p.keywords,
                     discovered_at=p.discovered_at,
-                )
-                for p in db_problems
-            ]
+                ))
+            
+            return problems
         finally:
             session.close()
 
@@ -92,6 +110,14 @@ class Database:
                 return None
             
             from pi_core.models import EvidenceSnippet
+            from datetime import datetime
+            
+            # Parse evidence with datetime handling
+            evidence_list = []
+            for e in db_problem.evidence:
+                if isinstance(e.get('timestamp'), str):
+                    e['timestamp'] = datetime.fromisoformat(e['timestamp'])
+                evidence_list.append(EvidenceSnippet(**e))
             
             return Problem(
                 id=db_problem.id,
@@ -102,7 +128,7 @@ class Database:
                 confidence_score=db_problem.confidence_score,
                 frequency_score=db_problem.frequency_score,
                 recency_score=db_problem.recency_score,
-                evidence=[EvidenceSnippet(**e) for e in db_problem.evidence],
+                evidence=evidence_list,
                 keywords=db_problem.keywords,
                 discovered_at=db_problem.discovered_at,
             )

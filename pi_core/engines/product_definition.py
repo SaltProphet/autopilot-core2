@@ -28,10 +28,13 @@ class ProductDefinitionEngine:
         
         # Why shippable
         why_shippable = self._generate_why_shippable(product_type)
+        
+        # Generate title
+        title = self._generate_title(problem, product_type)
 
         return Product(
             problem_id=problem.id,
-            title=self._generate_title(problem, product_type),
+            title=title,
             product_type=product_type,
             target_persona=target_persona,
             value_proposition=value_proposition,
@@ -39,6 +42,22 @@ class ProductDefinitionEngine:
             non_goals=non_goals,
             why_shippable=why_shippable,
         )
+
+    def _generate_title(self, problem: Problem, product_type: ProductType) -> str:
+        """Generate product title"""
+        # Clean up problem title
+        base_title = problem.title.replace("How to ", "").replace("how to ", "")
+        base_title = base_title[:50]  # Limit length
+        
+        # Add product type suffix
+        if product_type == ProductType.SCRIPT:
+            return f"{base_title} - Automation Script"
+        elif product_type == ProductType.MICRO_TOOL:
+            return f"{base_title} - Quick Tool"
+        elif product_type == ProductType.GUIDE:
+            return f"{base_title} - Complete Guide"
+        else:  # TEMPLATE
+            return f"{base_title} - Template"
 
     def _determine_product_type(self, problem: Problem) -> ProductType:
         """Determine the best product type for a problem"""
