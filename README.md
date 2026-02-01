@@ -4,6 +4,14 @@
 
 pi-core is an AI-powered system that discovers real problems from Reddit and GitHub, defines viable products, generates complete content and assets, and packages them for marketplace listing.
 
+## 📚 Documentation
+
+- **[APP_OVERVIEW.md](APP_OVERVIEW.md)** - **⭐ Comprehensive system overview** with architecture, all functions, API reference, timeline, and roadmap
+- **[README.md](README.md)** - This file - Quick start guide and basic usage
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Implementation details and completed features
+- **[REFACTOR_README.md](REFACTOR_README.md)** - Hacker News edition documentation
+- **[QA_EVIDENCE.md](QA_EVIDENCE.md)** - Testing evidence and validation
+
 ## 🚀 Quickstart (30 seconds)
 
 Try the demo with one command:
